@@ -1,10 +1,20 @@
-<html lang="en">
+<!DOCTYPE html>
+<html lang="no">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Julekalender</title>
+  <link rel="stylesheet" href="/main.css">
 </head>
 <body>
-    <h1>hei</h1>
+  <div class="wrapper2">
+    <div class="wrapper">
+      <div class="kalender">
+        <% for (let dag = 1; dag <= 24; dag++) { %>
+          <div class="luke" data-dag="<%= dag %>"><%= dag %></div>
+        <% } %>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
