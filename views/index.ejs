@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-<html lang="no">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Julekalender</title>
-  <link rel="stylesheet" href="/main.css">
-</head>
+<%- include("./partials/head") %>
+
 <body>
   <div class="wrapper2">
+    <div style="text-align: center; padding-top: 1rem;">
+      <label for="dato">Velg dag (0–25): </label>
+      <input type="number" id="dato" min="0" max="25">
+    </div>  
     <div class="wrapper">
       <div class="kalender">
         <% for (let dag = 1; dag <= 24; dag++) { %>
