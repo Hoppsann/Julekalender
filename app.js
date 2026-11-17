@@ -5,6 +5,8 @@ const mongoose = require("mongoose")
 const env = require("dotenv")
 env.config();
 
+const User = require('./models/user');
+
 const PORT = process.env.PORT || 4000;
 
 app.set('view engine', 'ejs');
@@ -19,9 +21,18 @@ app.get('/register', (req, res) => {
   res.render('register');
 });
 
-app.post('/register', (req, res) => {
-  console.log(req.body);
-  res.send('Mottatt!');
+app.post('/register', async (req, res) => {
+  try {
+    const { email } = req.body;
+    await User.create({ email });
+    res.send('Bruker registrert!');
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.send('Denne e-posten er allerede registrert.');
+    }
+    console.error(err);
+    res.status(500).send('Noe gikk galt, prøv igjen.');
+  }
 });
 
 mongoose.connect(process.env.MONGODB_URI)
@@ -30,4 +41,3 @@ mongoose.connect(process.env.MONGODB_URI)
     app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
   })
   .catch(err => console.error('Klarte ikke koble til MongoDB:', err));
-  
