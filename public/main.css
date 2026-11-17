@@ -1,5 +1,6 @@
 :root {
   --mainCol: rgb(239, 52, 52);
+  --green: rgb(29, 54, 29);
 }
 
 body {
@@ -113,19 +114,21 @@ body {
 
 nav {
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   width: 100%;
-  background-color: blue;
+  /* background-color: blue; */
 }
 
 ol {
-  width: 30%;
+  width: fit-content;
   display: flex;
-  margin: 0;
-  padding: 1rem;
-  background-color: red;
+  margin: 1rem 0rem;
+  padding: 1rem 5rem;
+  border-radius: 2rem;
+  background-color: var(--green);
   gap: 2rem;
   list-style-type: none;
+  color: white;
 }
 
 #navLeft {
@@ -134,4 +137,9 @@ ol {
 
 #navRight {
   justify-content: flex-end;
+}
+
+li a {
+  color: white;
+  text-decoration: none;
 }
