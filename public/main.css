@@ -9,13 +9,19 @@ body {
 }
 
 .wrapper2 {
+  height: fit-content;
   backdrop-filter: blur(0.5rem) brightness(0.5);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 .wrapper {
   display: flex;
   justify-content: center;
 }
+
+/* kalender */
 
 .kalender {
   /* background-color: rgb(255, 63, 63); */
@@ -51,6 +57,7 @@ body {
   box-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.25),
     inset 0 0 4px rgba(0, 0, 0, 0.4);
+
 }
 
 .luke:hover {
@@ -92,7 +99,8 @@ body {
   grid-row: span 2;
 }
 
-.luke.aktiv {
+.luke.aktiv,
+form {
   background-image: url(./img/paper.jpg);
   background-size: cover;
   background-position: center;
@@ -103,6 +111,7 @@ body {
   color: rgba(75, 56, 26, 0.717);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.457);
   background-blend-mode: normal;
+  
 }
 
 .luke.idag {
@@ -117,7 +126,7 @@ body {
   cursor: pointer;
 }
 
-
+/* nav */
 
 nav {
   display: flex;
@@ -149,4 +158,48 @@ ol {
 li a {
   color: white;
   text-decoration: none;
+}
+
+
+/* form */
+
+#register {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--mainCol);
+
+  width: 30rem;
+  gap: 1rem;
+  padding: 4rem;
+  border-radius: 2rem;
+  margin: 4rem;
+  height: fit-content;
+}
+
+form h1 {
+  font-size: 3rem;
+  margin: 0;
+}
+
+form label {
+  font-size: 2rem;
+}
+
+form input {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+}
+
+form button {
+  width: 10rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  border: none;
 }
