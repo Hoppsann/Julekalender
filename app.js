@@ -19,6 +19,10 @@ app.get('/register', (req, res) => {
   res.render('register');
 });
 
+app.post('/register', (req, res) => {
+  console.log(req.body);
+  res.send('Mottatt!');
+});
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
@@ -26,3 +30,4 @@ mongoose.connect(process.env.MONGODB_URI)
     app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
   })
   .catch(err => console.error('Klarte ikke koble til MongoDB:', err));
+  
