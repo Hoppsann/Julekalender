@@ -93,6 +93,11 @@ app.get('/', async (req, res) => {
   });
 });
 
+app.get('/dashbord', (req, res) => {
+  res.render('dashbord');
+});
+
+
 app.post('/testdag', (req, res) => {
   if (process.env.NODE_ENV === 'production') return res.sendStatus(404);
   res.cookie('testdag', req.body.dag);
