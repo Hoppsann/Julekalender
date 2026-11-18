@@ -3,15 +3,29 @@
 <body>
   <div class="wrapper2">
     <%- include("./partials/nav") %>
-    <div style="text-align: center; padding-top: 1rem;">
-      <label for="dato">Velg dag (0–25): </label>
-      <input type="number" id="dato" min="0" max="25">
-    </div>  
+
+    <% if (visTestdag) { %>
+      <form method="POST" action="/testdag" style="text-align: center; padding-top: 1rem;">
+        <label for="dag">Velg dag (0–25): </label>
+        <input type="number" id="dag" name="dag" min="0" max="25" value="<%= idag %>">
+        <button type="submit">Sett dag</button>
+      </form>
+    <% } %>
+
     <div class="wrapper">
       <div class="kalender">
-        <% for (let dag = 1; dag <= 24; dag++) { %>
-          <div class="luke" data-dag="<%= dag %>"><%= dag %></div>
-        <% } %>
+        <% luker.forEach(luke => { %>
+          <% if (luke.dag > idag) { %>
+            <div class="luke fremtid" aria-disabled="true"><%= luke.dag %></div>
+          <% } else { %>
+            <a class="luke <%= luke.dag === idag ? 'idag' : 'aktiv' %>" href="/luke/<%= luke.dag %>">
+              <%= luke.dag %>
+              <% if (luke.winner) { %>
+                <span class="vinner"><%= luke.winner.email %></span>
+              <% } %>
+            </a>
+          <% } %>
+        <% }) %>
       </div>
     </div>
   </div>
