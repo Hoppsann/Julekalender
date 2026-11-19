@@ -132,8 +132,7 @@ body {
   grid-row: span 1;
 }
 
-.luke.aktiv,
-form {
+.luke.aktiv {
   background-image: url(./img/paper.jpg);
   background-size: cover;
   background-position: center;
@@ -238,4 +237,69 @@ form button {
   border-radius: 0.5rem;
   padding: 0.5rem;
   border: none;
+}
+
+/* luke */
+
+#lukewrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+#luke {
+  padding: 2rem;
+  background-color: #F4F4F9;
+  width: fit-content;
+  border-radius: 2rem;
+}
+
+#lukewrapper form {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+#luke input {
+  border: 2px solid #CCCCCC;
+}
+
+#luke button {
+  font-weight: bold;
+  color: white;
+  background-color: #007BFF;
+  border: 2px solid #CCCCCC;
+}
+
+#luke h1 {
+  margin: 0;
+}
+
+#luke p {
+  font-size: 1.5rem;
+}
+
+#luke form label:has(input[type="radio"]) {
+  display: block;
+  border: 2px solid #CCCCCC;
+  background-color: #F0F0F0;
+  border-radius: 1rem;
+  cursor: pointer;
+  text-align: center;
+  padding: 1rem;
+  width: 40rem;
+  margin: 0;
+}
+
+#luke form label:has(input[type="radio"]:checked) {
+  background-color: #007BFF;
+  font-weight: bold;
+  color: white;
+}
+
+#luke form input {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
 }

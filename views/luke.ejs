@@ -2,24 +2,26 @@
 <body>
   <div class="wrapper2">
     <%- include("./partials/nav") %>
-    <main id="luke">
-      <h1>Luke <%= luke.dag %></h1>
-      <p><%= luke.question %></p>
+    <main id="lukewrapper">
+      <div id="luke">
 
-      <% if (luke.type === 'video') { %>
-        <iframe width="560" height="315"
+        <h1>Luke <%= luke.dag %></h1>
+        <p><%= luke.question %></p>
+        
+        <% if (luke.type === 'video') { %>
+          <iframe width="560" height="315"
           src="<%= luke.video_url.replace('watch?v=', 'embed/') %>"
           title="Video til luke <%= luke.dag %>"
           allowfullscreen></iframe>
-      <% } %>
-
-      <% if (luke.winner) { %>
+          <% } %>
+          
+          <% if (luke.winner) { %>
         <p>Vinner: <%= luke.winner.email %></p>
-      <% } %>
-
-      <% if (svar) { %>
-        <p>Du har svart: <strong><%= svar.answer %></strong></p>
-      <% } else { %>
+        <% } %>
+        
+        <% if (svar) { %>
+          <p>Du har svart: <strong><%= svar.answer %></strong></p>
+          <% } else { %>
         <form method="POST" action="/luke/<%= luke.dag %>">
           <% if (luke.type === 'multiple_choice') { %>
             <% luke.options.forEach(option => { %>
@@ -27,14 +29,15 @@
                 <input type="radio" name="answer" value="<%= option %>" required>
                 <%= option %>
               </label>
-            <% }) %>
-          <% } else { %>
-            <label for="answer">Ditt svar</label>
-            <input type="text" id="answer" name="answer" required>
-          <% } %>
-          <button type="submit">Send svar</button>
-        </form>
-      <% } %>
+              <% }) %>
+              <% } else { %>
+                <label for="answer">Ditt svar</label>
+                <input type="text" id="answer" name="answer" required>
+                <% } %>
+                <button type="submit">Send svar</button>
+              </form>
+              <% } %>
+            </div>
     </main>
   </div>
 </body>
