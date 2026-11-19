@@ -1,22 +1,46 @@
 const express = require('express');
 const path = require('path');
-const app = express();
-const mongoose = require("mongoose")
-const env = require("dotenv")
-env.config();
-
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+require('dotenv').config();
+
 const User = require('./models/user');
 const Luke = require('./models/luke');
 const Svar = require('./models/svar');
 
+const app = express();
 const PORT = process.env.PORT || 4000;
+const ER_PROD = process.env.NODE_ENV === 'production';
 
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Personvern
+app.locals.visNavn = email => (email ? email.split('@')[0] : 'Ukjent');
+
+// Hjelpefunksjoner
+
+function dagIDesember(req) {
+  if (!ER_PROD && req.cookies.testdag) {
+    return Number(req.cookies.testdag);
+  }
+  const [, mnd, dag] = new Date()
+    .toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' })
+    .split('-')
+    .map(Number);
+  return mnd === 12 ? dag : 0;
+}
+
+// Gir et heltall 1–24, ellers null
+function lesDag(verdi) {
+  const dag = Number(verdi);
+  return Number.isInteger(dag) && dag >= 1 && dag <= 24 ? dag : null;
+}
+
+// Middleware
 
 function auth(req, res, next) {
   const token = req.cookies.token;
@@ -32,52 +56,19 @@ function auth(req, res, next) {
   }
 }
 
-app.get('/luke/:dag', auth, async (req, res) => {
-  const dag = Number(req.params.dag);
-if (dag > dagIDesember(req)) {
-    return res.status(403).send('Denne luka er ikke åpen ennå!');
-  }
-
-  const luke = await Luke.findOne({ dag })
-    .select('-correct_answer')
-    .populate('winner', 'email');
-  if (!luke) return res.status(404).send('Fant ikke luka.');
-
-  const svar = await Svar.findOne({ user: req.userId, luke: luke._id });
-  res.render('luke', { luke, svar });
-});
-
-app.post('/luke/:dag', auth, async (req, res) => {
-  const dag = Number(req.params.dag);
-  if (dag > dagIDesember(req)) {
-    return res.status(403).send('Denne luka er ikke åpen ennå!');
-  }
-
-  const luke = await Luke.findOne({ dag });
-  if (!luke) return res.status(404).send('Fant ikke luka.');
-
+async function adminOnly(req, res, next) {
   try {
-    await Svar.create({ user: req.userId, luke: luke._id, answer: req.body.answer });
-    res.redirect(`/luke/${dag}`);
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.send('Du har allerede svart på denne luka.');
+    const user = await User.findById(req.userId);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).send('Ingen tilgang');
     }
-    console.error(err);
-    res.status(500).send('Noe gikk galt, prøv igjen.');
+    next();
+  } catch (err) {
+    next(err);
   }
-});
-
-function dagIDesember(req) {
-  if (process.env.NODE_ENV !== 'production' && req.cookies.testdag) {
-    return Number(req.cookies.testdag);
-  }
-  const [aar, mnd, dag] = new Date()
-    .toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' })
-    .split('-')
-    .map(Number);
-  return mnd === 12 ? dag : 0;
 }
+
+// Kalender
 
 app.get('/', async (req, res) => {
   const idag = dagIDesember(req);
@@ -89,13 +80,73 @@ app.get('/', async (req, res) => {
   res.render('index', {
     luker,
     idag,
-    visTestdag: process.env.NODE_ENV !== 'production'
+    visTestdag: !ER_PROD
   });
 });
 
-app.get('/dashbord', async (req, res) => {
+app.get('/luke/:dag', auth, async (req, res) => {
+  const dag = lesDag(req.params.dag);
+  if (!dag) return res.status(404).send('Fant ikke luka.');
+
+  const idag = dagIDesember(req);
+  if (dag > idag) {
+    return res.status(403).send('Denne luka er ikke åpen ennå!');
+  }
+
+  const luke = await Luke.findOne({ dag })
+    .select('-correct_answer')
+    .populate('winner', 'email');
+  if (!luke) return res.status(404).send('Fant ikke luka.');
+
+  const svar = await Svar.findOne({ user: req.userId, luke: luke._id });
+
+  // Riktig/galt vises først når luka er stengt, så fasiten ikke spres samme dag
+  const lukket = dag < idag;
+
+  res.render('luke', { luke, svar, lukket });
+});
+
+app.post('/luke/:dag', auth, async (req, res) => {
+  const dag = lesDag(req.params.dag);
+  if (!dag) return res.status(404).send('Fant ikke luka.');
+
+  if (dag > dagIDesember(req)) {
+    return res.status(403).send('Denne luka er ikke åpen ennå!');
+  }
+
+  const luke = await Luke.findOne({ dag });
+  if (!luke) return res.status(404).send('Fant ikke luka.');
+
+  // Flervalg rettes automatisk, åpne svar rettes av lærer (null = venter)
+  const correct = luke.type === 'multiple_choice'
+    ? req.body.answer === luke.correct_answer
+    : null;
+
   try {
-    const valgtDag = Number(req.query.dag) || dagIDesember(req) || 1;
+    await Svar.create({
+      user: req.userId,
+      luke: luke._id,
+      answer: req.body.answer,
+      correct
+    });
+    res.redirect(`/luke/${dag}`);
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.send('Du har allerede svart på denne luka.');
+    }
+    if (err.name === 'ValidationError') {
+      return res.status(400).send('Svaret kan ikke være tomt.');
+    }
+    console.error(err);
+    res.status(500).send('Noe gikk galt, prøv igjen.');
+  }
+});
+
+// Dashbord
+
+app.get('/dashbord', auth, adminOnly, async (req, res) => {
+  try {
+    const valgtDag = lesDag(req.query.dag) || Math.min(dagIDesember(req), 24) || 1;
 
     const users = await User.find().sort({ email: 1 });
     const luke = await Luke.findOne({ dag: valgtDag });
@@ -115,21 +166,37 @@ app.get('/dashbord', async (req, res) => {
   }
 });
 
+// Testdag
 
 app.post('/testdag', (req, res) => {
-  if (process.env.NODE_ENV === 'production') return res.sendStatus(404);
-  res.cookie('testdag', req.body.dag);
+  if (ER_PROD) return res.sendStatus(404);
+
+  const dag = Number(req.body.dag);
+  if (Number.isInteger(dag) && dag >= 0 && dag <= 25) {
+    res.cookie('testdag', String(dag));
+  }
   res.redirect('/');
 });
 
+// Registrering og innlogging
+
 app.get('/register', (req, res) => {
-  res.render('register');
+  res.render('register', { feil: null });
 });
 
 app.post('/register', async (req, res) => {
+  const email = String(req.body.email || '').trim().toLowerCase();
+
+  if (!/^[^\s@]+@afk\.no$/.test(email)) {
+    return res.status(400).render('register', {
+      feil: 'Bruk AFK-e-posten din (navn@afk.no).'
+    });
+  }
+
   try {
-    const { email } = req.body;
-    const user = await User.create({ email });
+    // Finnes brukeren fra før, logges den inn igjen i stedet for å bli låst ute
+    let user = await User.findOne({ email });
+    if (!user) user = await User.create({ email });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.cookie('token', token, {
@@ -139,13 +206,12 @@ app.post('/register', async (req, res) => {
     });
     res.redirect('/');
   } catch (err) {
-    if (err.code === 11000) {
-      return res.send('Denne e-posten er allerede registrert.');
-    }
     console.error(err);
-    res.status(500).send('Noe gikk galt, prøv igjen.');
+    res.status(500).render('register', { feil: 'Noe gikk galt, prøv igjen.' });
   }
 });
+
+// Oppstart
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {

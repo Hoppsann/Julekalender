@@ -1,25 +1,25 @@
 <%- include("./partials/head") %>
-<script src="https://app.embed.im/snow.js" defer></script>
 <body>
   <div class="wrapper2">
+    <script src="https://app.embed.im/snow.js" defer></script>
     <%- include("./partials/nav") %>
 
-    <div class="wrapper">
+    <main class="wrapper">
       <div class="kalender">
         <% luker.forEach(luke => { %>
           <% if (luke.dag > idag) { %>
-            <div class="luke fremtid" aria-disabled="true"><%= luke.dag %></div>
+            <div class="luke fremtid" aria-disabled="true" aria-label="Luke <%= luke.dag %>, ikke åpen ennå"><%= luke.dag %></div>
           <% } else { %>
             <a class="luke <%= luke.dag === idag ? 'idag' : 'aktiv' %>" href="/luke/<%= luke.dag %>">
               <%= luke.dag %>
               <% if (luke.winner) { %>
-                <span class="vinner"><%= luke.winner.email %></span>
+                <span class="vinner"><%= visNavn(luke.winner.email) %></span>
               <% } %>
             </a>
           <% } %>
         <% }) %>
       </div>
-    </div>
+    </main>
   </div>
 </body>
 </html>

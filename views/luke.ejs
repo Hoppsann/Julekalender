@@ -7,37 +7,52 @@
 
         <h1>Luke <%= luke.dag %></h1>
         <p><%= luke.question %></p>
-        
-        <% if (luke.type === 'video') { %>
+
+        <% if (luke.type === 'video' && luke.video_url) { %>
           <iframe width="560" height="315"
-          src="<%= luke.video_url.replace('watch?v=', 'embed/') %>"
-          title="Video til luke <%= luke.dag %>"
-          allowfullscreen></iframe>
-          <% } %>
-          
-          <% if (luke.winner) { %>
-        <p>Vinner: <%= luke.winner.email %></p>
+                  src="<%= luke.video_url.replace('watch?v=', 'embed/') %>"
+                  title="Video til luke <%= luke.dag %>"
+                  allowfullscreen></iframe>
         <% } %>
-        
+
+        <% if (luke.winner) { %>
+          <p class="vinner">Vinner: <strong><%= visNavn(luke.winner.email) %></strong></p>
+        <% } %>
+
         <% if (svar) { %>
           <p>Du har svart: <strong><%= svar.answer %></strong></p>
+
+          <% if (!lukket) { %>
+            <p class="tilbakemelding venter">Svaret ditt er registrert! Du får vite om det var riktig når luka stenger.</p>
+          <% } else if (svar.correct === true) { %>
+            <p class="tilbakemelding riktig">Riktig! Du var med i trekningen.</p>
+          <% } else if (svar.correct === false) { %>
+            <p class="tilbakemelding galt">Dessverre feil svar denne gangen.</p>
           <% } else { %>
-        <form method="POST" action="/luke/<%= luke.dag %>">
-          <% if (luke.type === 'multiple_choice') { %>
-            <% luke.options.forEach(option => { %>
-              <label>
-                <input type="radio" name="answer" value="<%= option %>" required>
-                <%= option %>
-              </label>
-              <% }) %>
-              <% } else { %>
-                <label for="answer">Ditt svar</label>
-                <input type="text" id="answer" name="answer" required>
-                <% } %>
-                <button type="submit">Send svar</button>
-              </form>
-              <% } %>
-            </div>
+            <p class="tilbakemelding venter">Svaret ditt er ikke rettet ennå.</p>
+          <% } %>
+
+        <% } else { %>
+          <form method="POST" action="/luke/<%= luke.dag %>">
+            <% if (luke.type === 'multiple_choice') { %>
+              <fieldset>
+                <legend>Velg ett svar</legend>
+                <% luke.options.forEach(option => { %>
+                  <label>
+                    <input type="radio" name="answer" value="<%= option %>" required>
+                    <%= option %>
+                  </label>
+                <% }) %>
+              </fieldset>
+            <% } else { %>
+              <label for="answer">Ditt svar</label>
+              <input type="text" id="answer" name="answer" required>
+            <% } %>
+            <button type="submit">Send svar</button>
+          </form>
+        <% } %>
+
+      </div>
     </main>
   </div>
 </body>
