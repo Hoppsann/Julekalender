@@ -93,8 +93,26 @@ app.get('/', async (req, res) => {
   });
 });
 
-app.get('/dashbord', (req, res) => {
-  res.render('dashbord');
+app.get('/dashbord', async (req, res) => {
+  try {
+    const valgtDag = Number(req.query.dag) || dagIDesember(req) || 1;
+
+    const users = await User.find().sort({ email: 1 });
+    const luke = await Luke.findOne({ dag: valgtDag });
+    const svar = luke ? await Svar.find({ luke: luke._id }) : [];
+
+    const antall = {
+      riktig: svar.filter(s => s.correct === true).length,
+      galt:   svar.filter(s => s.correct === false).length,
+      venter: svar.filter(s => s.correct === null).length,
+      total:  svar.length
+    };
+
+    res.render('dashbord', { users, valgtDag, antall });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Kunne ikke hente data');
+  }
 });
 
 

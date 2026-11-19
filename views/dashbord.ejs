@@ -2,8 +2,64 @@
 <body>
     <div class="wrapper2">
         <%- include("./partials/nav") %>
-        <div>
-            
-        </div>
+
+        <main class="dashbord">
+
+            <section id="dag" class="panel">
+                <h2>Dag</h2>
+                <form method="GET" action="/dashbord" class="dag-form">
+                    <label for="dag-velger">Velg dag</label>
+                    <input type="number" id="dag-velger" name="dag" min="1" max="24" value="<%= valgtDag %>">
+                    <button type="submit">Vis</button>
+                </form>
+            </section>
+
+            <section id="svar" class="panel">
+                <h2>Svar – luke <%= valgtDag %></h2>
+
+                <% if (antall.total === 0) { %>
+                    <p>Ingen svar ennå.</p>
+                <% } else {
+                    const pRiktig = antall.riktig / antall.total * 100;
+                    const pGalt   = antall.galt   / antall.total * 100;
+                %>
+                    <div class="chart-wrap">
+                        <div class="pie"
+                             role="img"
+                             aria-label="<%= antall.riktig %> riktige, <%= antall.galt %> gale, <%= antall.venter %> venter"
+                             style="--riktig: <%= pRiktig %>%; --galt: <%= pRiktig + pGalt %>%;"></div>
+
+                        <ul class="legend">
+                            <li><span class="dot dot-riktig"></span> Riktig: <%= antall.riktig %></li>
+                            <li><span class="dot dot-galt"></span> Galt: <%= antall.galt %></li>
+                            <li><span class="dot dot-venter"></span> Venter: <%= antall.venter %></li>
+                        </ul>
+                    </div>
+                <% } %>
+            </section>
+
+            <section id="brukere" class="panel">
+                <h2>Brukere (<%= users.length %>)</h2>
+
+                <% if (users.length === 0) { %>
+                    <p>Ingen brukere ennå.</p>
+                <% } else { %>
+                    <ul class="user-list">
+                        <% users.forEach(user => { %>
+                            <li class="user">
+                                <span class="user-email"><%= user.email %></span>
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } %>
+            </section>
+
+            <section id="trekning" class="panel">
+                <h2>Trekning – luke <%= valgtDag %></h2>
+                <!-- kommer senere -->
+            </section>
+
+        </main>
     </div>
 </body>
+</html>
