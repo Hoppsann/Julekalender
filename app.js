@@ -3,6 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const User = require('./models/user');
@@ -73,8 +74,7 @@ async function adminOnly(req, res, next) {
 app.get('/', async (req, res) => {
   const idag = dagIDesember(req);
   const luker = await Luke.find()
-    .select('dag winner')
-    .populate('winner', 'email')
+    .select('dag')
     .sort('dag');
 
   res.render('index', {
@@ -149,26 +149,27 @@ app.get('/dashbord', auth, adminOnly, async (req, res) => {
     const valgtDag = lesDag(req.query.dag) || Math.min(dagIDesember(req), 24) || 1;
 
     const users = await User.find().sort({ email: 1 });
-    const luke = await Luke.findOne({ dag: valgtDag });
+    const luke = await Luke.findOne({ dag: valgtDag }).populate('winner', 'email');
     const svar = luke
-  ? await Svar.find({ luke: luke._id }).populate('user', 'email')
-  : [];
-
+      ? await Svar.find({ luke: luke._id }).populate('user', 'email')
+      : [];
+    const antallRiktige = svar.filter(s => s.correct === true).length;
 
     const alleSvar = await Svar.find()
       .populate('luke', 'dag correct_answer')
       .populate('user', 'email');
-      alleSvar.sort((a, b) => a.luke.dag - b.luke.dag);
+    alleSvar.sort((a, b) => (a.luke?.dag ?? 0) - (b.luke?.dag ?? 0));
 
     res.render('dashbord', {
       users,
       valgtDag,
       svar,
       alleSvar,
+      luke,
+      antallRiktige,
       idag: dagIDesember(req),
       visTestdag: !ER_PROD
     });
-
   } catch (err) {
     console.error(err);
     res.status(500).send('Kunne ikke hente data');
@@ -185,6 +186,32 @@ app.post('/dashbord/svar/:id', auth, adminOnly, async (req, res) => {
     res.status(500).send('Kunne ikke lagre vurderingen');
   }
 });
+
+app.post('/dashbord/trekk', auth, adminOnly, async (req, res) => {
+  try {
+    const dag = lesDag(req.body.dag);
+    if (!dag) return res.status(400).send('Ugyldig dag');
+
+    const luke = await Luke.findOne({ dag });
+    if (!luke) return res.status(404).send('Fant ikke luka');
+
+    if (luke.winner) return res.redirect(`/dashbord?dag=${dag}`);
+
+    const riktige = await Svar.find({ luke: luke._id, correct: true });
+    if (riktige.length === 0) return res.redirect(`/dashbord?dag=${dag}`);
+
+    const tilfeldig = riktige[crypto.randomInt(riktige.length)];
+
+    luke.winner = tilfeldig.user;
+    await luke.save();
+
+    res.redirect(`/dashbord?dag=${dag}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Kunne ikke trekke vinner');
+  }
+});
+
 // Testdag
 
 app.post('/testdag', (req, res) => {

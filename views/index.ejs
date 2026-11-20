@@ -12,9 +12,6 @@
           <% } else { %>
             <a class="luke <%= luke.dag === idag ? 'idag' : 'aktiv' %>" href="/luke/<%= luke.dag %>">
               <%= luke.dag %>
-              <% if (luke.winner) { %>
-                <span class="vinner"><%= visNavn(luke.winner.email) %></span>
-              <% } %>
             </a>
           <% } %>
         <% }) %>
