@@ -55,13 +55,13 @@ body {
   .kalender { --cols: 8; }
 }
 
-.luke {
+.luke, #luke, #register form {
   position: relative;
   background-position: center;
   border-radius: 0.5rem;
   display: grid;
   place-items: center;
-  color: rgb(133, 9, 9);
+  color: rgb(91, 12, 12);
   background-color: var(--mainCol);
   background-image: url(./img/paper.jpg);
   background-blend-mode: overlay;
@@ -132,7 +132,7 @@ body {
   grid-row: span 1;
 }
 
-.luke.aktiv {
+.luke.aktiv{
   background-image: url(./img/paper.jpg);
   background-size: cover;
   background-position: center;
@@ -232,10 +232,11 @@ li a {
   border: none;
 }
 
-#register form button {
-  width: 10rem;
+form button {
+  width: 100%;
   border-radius: 0.5rem;
-  padding: 0.5rem;
+  padding: 1rem;
+  font-size: 2rem;
   border: none;
 }
 
@@ -250,7 +251,8 @@ li a {
 
 #luke {
   padding: 2rem;
-  background-color: #F4F4F9;
+  background-color: var(--mainCol);
+  color: white;
   width: fit-content;
   border-radius: 2rem;
 }
@@ -273,6 +275,7 @@ li a {
 }
 
 #luke h1 {
+  font-size: 4rem;
   margin: 0;
 }
 
@@ -283,12 +286,14 @@ li a {
 #luke form label:has(input[type="radio"]) {
   display: block;
   border: 2px solid #CCCCCC;
+  color: rgba(0, 0, 0, 0.726);
+  text-shadow: none;
   background-color: #F0F0F0;
   border-radius: 1rem;
   cursor: pointer;
   text-align: center;
   padding: 1rem;
-  width: 40rem;
+  width: 100%;
   margin: 0;
 }
 
@@ -309,8 +314,8 @@ li a {
 
 .dashbord {
   display: grid;
-  grid-template-columns: 1fr 1fr;   /* to kolonner */
-  gap: 1.5rem;                      /* avstand mellom rutene */
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
   padding: 1.5rem;
 }
 
