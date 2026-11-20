@@ -117,7 +117,7 @@ app.post('/luke/:dag', auth, async (req, res) => {
   const luke = await Luke.findOne({ dag });
   if (!luke) return res.status(404).send('Fant ikke luka.');
 
-  // Flervalg rettes automatisk, åpne svar rettes av lærer (null = venter)
+  // Flervalg rettes automatisk
   const correct = luke.type === 'multiple_choice'
     ? req.body.answer === luke.correct_answer
     : null;
@@ -150,28 +150,41 @@ app.get('/dashbord', auth, adminOnly, async (req, res) => {
 
     const users = await User.find().sort({ email: 1 });
     const luke = await Luke.findOne({ dag: valgtDag });
-    const svar = luke ? await Svar.find({ luke: luke._id }) : [];
+    const svar = luke
+  ? await Svar.find({ luke: luke._id }).populate('user', 'email')
+  : [];
 
-    const antall = {
-      riktig: svar.filter(s => s.correct === true).length,
-      galt:   svar.filter(s => s.correct === false).length,
-      venter: svar.filter(s => s.correct === null).length,
-      total:  svar.length
-    };
+
+    const alleSvar = await Svar.find()
+      .populate('luke', 'dag correct_answer')
+      .populate('user', 'email');
+      alleSvar.sort((a, b) => a.luke.dag - b.luke.dag);
 
     res.render('dashbord', {
       users,
       valgtDag,
-      antall,
+      svar,
+      alleSvar,
       idag: dagIDesember(req),
       visTestdag: !ER_PROD
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).send('Kunne ikke hente data');
   }
 });
 
+app.post('/dashbord/svar/:id', auth, adminOnly, async (req, res) => {
+  try {
+    const correct = req.body.correct === 'true';
+    await Svar.findByIdAndUpdate(req.params.id, { correct });
+    res.redirect('/dashbord');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Kunne ikke lagre vurderingen');
+  }
+});
 // Testdag
 
 app.post('/testdag', (req, res) => {
