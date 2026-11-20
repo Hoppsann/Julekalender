@@ -63,9 +63,29 @@
                     </ul>
                 <% } %>
             </section>
+                <section id="trekning" class="panel">
+                    <h2>Trekning - luke <%= valgtDag %></h2>
 
-            <section id="trekning" class="panel">
-                <h2>Trekning - luke <%= valgtDag %></h2>
+                    <form method="GET" action="/dashbord" class="dag-velger">
+                        <label for="dag-velger">Velg luke</label>
+                        <input type="number" id="dag-velger" name="dag" min="1" max="24" value="<%= valgtDag %>">
+                        <button type="submit">Vis</button>
+                    </form>
+
+                    <% if (!luke) { %>
+                        <p>Luke <%= valgtDag %> finnes ikke.</p>
+                    <% } else if (luke.winner) { %>
+                        <p>Vinner: <strong><%= luke.winner.email %></strong></p>
+                    <% } else if (antallRiktige === 0) { %>
+                        <p>Ingen riktige svar på luke <%= valgtDag %> ennå.</p>
+                    <% } else { %>
+                        <p><%= antallRiktige %> har svart riktig.</p>
+                        <form method="POST" action="/dashbord/trekk">
+                            <input type="hidden" name="dag" value="<%= valgtDag %>">
+                            <button type="submit">Trekk vinner</button>
+                        </form>
+                    <% } %>
+                </section>
             </section>
 
         </main>
