@@ -1,6 +1,9 @@
 <nav>
     <ol id="navLeft">
-        <li><a href="/">kalender</a></li>
+        <li><a href="/">Kalender</a></li>
+        <% if (erAdmin) { %>
+            <li><a href="/dashbord">Dashbord</a></li>
+        <% } %>
     </ol>
     <ol id="navRight">
         <li><a href="/register">Register</a></li>

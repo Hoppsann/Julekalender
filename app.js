@@ -18,6 +18,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Finn ut om den som besøker siden er admin (brukes i navbaren)
+app.use(async (req, res, next) => {
+  res.locals.erAdmin = false;
+
+  const token = req.cookies.token;
+  if (!token) return next();
+
+  try {
+    const data = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(data.id).select('role');
+    res.locals.erAdmin = user?.role === 'admin';
+  } catch {
+  }
+
+  next();
+});
+
 // Personvern
 app.locals.visNavn = email => (email ? email.split('@')[0] : 'Ukjent');
 
@@ -185,6 +202,7 @@ app.post('/dashbord/svar/:id', auth, adminOnly, async (req, res) => {
     res.status(500).send('Kunne ikke lagre vurderingen');
   }
 });
+
 // Testdag
 
 app.post('/testdag', (req, res) => {
