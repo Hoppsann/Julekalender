@@ -159,7 +159,13 @@ app.get('/dashbord', auth, adminOnly, async (req, res) => {
       total:  svar.length
     };
 
-    res.render('dashbord', { users, valgtDag, antall });
+    res.render('dashbord', {
+      users,
+      valgtDag,
+      antall,
+      idag: dagIDesember(req),
+      visTestdag: !ER_PROD
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Kunne ikke hente data');
@@ -175,7 +181,7 @@ app.post('/testdag', (req, res) => {
   if (Number.isInteger(dag) && dag >= 0 && dag <= 25) {
     res.cookie('testdag', String(dag));
   }
-  res.redirect('/');
+  res.redirect('/dashbord');
 });
 
 // Registrering og innlogging
